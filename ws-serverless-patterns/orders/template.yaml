@@ -118,6 +118,55 @@ Resources:
             Path: /orders
             Method: get
             RestApiId: !Ref WorkshopApiGateway
+
+
+  # Edit Method
+  EditOrderFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/api/order/edit
+      Handler: edit_order.lambda_handler
+      Runtime: python3.12
+      Tracing: Active
+      Policies:
+        DynamoDBCrudPolicy:
+          TableName: !Ref OrdersTable
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref OrdersTable
+      Layers:
+        - !Ref PyUtils
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /orders/{orderId}
+            Method: put
+            RestApiId: !Ref WorkshopApiGateway
+
+  # Cancel Method
+  CancelOrderFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/api/order/cancel
+      Handler: cancel_order.lambda_handler
+      Runtime: python3.12
+      Tracing: Active
+      Policies:
+        DynamoDBCrudPolicy:
+          TableName: !Ref OrdersTable
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref OrdersTable
+      Layers:
+        - !Ref PyUtils
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /orders/{orderId}
+            Method: delete
+            RestApiId: !Ref WorkshopApiGateway
 Outputs:
   OrdersServiceEndpoint: # Returns the API URL
     Description: "API Gateway endpoint URL"
