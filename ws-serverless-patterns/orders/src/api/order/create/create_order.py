@@ -8,17 +8,21 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 from aws_lambda_powertools.utilities.idempotency import (
     IdempotencyConfig, DynamoDBPersistenceLayer, idempotent_function
 )
+from aws_lambda_powertools import Logger
 
 orders_table = os.getenv('TABLE_NAME')
 idempotency_table = os.getenv('IDEMPOTENCY_TABLE_NAME')
 dynamodb = boto3.resource('dynamodb')
+logger = Logger()
 
 persistence_layer = DynamoDBPersistenceLayer(table_name=idempotency_table)
 idempotency_config = IdempotencyConfig(event_key_jmespath="powertools_json(body).orderId")
 
 @idempotent_function(data_keyword_argument="event", config=idempotency_config, persistence_store=persistence_layer)
 def add_order(event: dict):
+    logger.info("Adding a new order")
     detail = json.loads(event['body'])
+    logger.info({"operation": "add_order", "order_details": detail})
     restaurant_id = detail['restaurantId']
     total_amount = detail['totalAmount']
     order_items = detail['orderItems']
